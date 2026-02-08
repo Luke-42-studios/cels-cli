@@ -1,0 +1,10 @@
+{
+  "project": "cels-cli",
+  "version": "0.1.0",
+  "workflow": {
+    "mode": "yolo",
+    "depth": "comprehensive",
+    "parallelization": true
+  },
+  "created": "2026-02-08"
+}
