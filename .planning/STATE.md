@@ -1,7 +1,7 @@
 # cels-cli State
 
-**Current Phase:** Blocked — waiting for CELS core Phase 7 (Backend Abstraction Interface)
-**Status:** Planning complete, execution blocked on core dependency
+**Current Phase:** Phase 2: Project Scaffolding
+**Status:** Phase 1 complete, Phase 2 pending
 
 ## Architecture
 
@@ -12,7 +12,7 @@ Supersedes previous TypeScript/Pastel approach (scrapped 2026-02-09).
 
 | Phase | Status | Plans |
 |-------|--------|-------|
-| Phase 1: TUI Shell | Blocked (needs CELS Phase 7) | TBD |
+| Phase 1: TUI Shell | COMPLETE | 01-01 |
 | Phase 2: Project Scaffolding | Pending | TBD |
 | Phase 3: Module Management | Pending | TBD |
 | Phase 4: Build & Run | Pending | TBD |
@@ -20,4 +20,4 @@ Supersedes previous TypeScript/Pastel approach (scrapped 2026-02-09).
 
 ## Completed Plans
 
-(none — detailed plans created after CELS Phase 7 ships)
+- **01-01**: TUI Shell — CEL_Build + TUI_Engine_use, tab navigation (Projects|Packages|Build|Tests), input system, render provider, status bar
