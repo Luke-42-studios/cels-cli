@@ -5,7 +5,7 @@
  * Input via arrow keys, number keys, Tab/Shift-Tab.
  * Status bar shows version and current working directory.
  *
- * Rendering is handled by cels-ncurses widget renderers (tui_widgets.h).
+ * Rendering is handled by Clay layout + clay_ncurses_renderer.
  * This file only defines compositions and state -- no raw ncurses code.
  */
 
@@ -13,6 +13,8 @@
 #include "app.h"
 #include "components.h"
 #include <cels-ncurses/tui_engine.h>
+#include <cels-clay/clay_engine.h>
+#include <cels-clay/clay_ncurses_renderer.h>
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
@@ -98,19 +100,15 @@ CEL_System(TabInputSystem,
 
 #define TabBarView(...) CEL_Init(TabBarView, __VA_ARGS__)
 CEL_Composition(TabBarView, CliTab active;) {
-    CEL_Has(W_TabBar,
-        .active = props.active,
-        .count = TAB_COUNT,
-        .labels = tab_labels
-    );
+    Widget_TabBar(.active = props.active,
+            .count = TAB_COUNT,
+            .labels = tab_labels) {}
 }
 
 #define TabContentView(...) CEL_Init(TabContentView, __VA_ARGS__)
 CEL_Composition(TabContentView, CliTab tab;) {
-    CEL_Has(W_TabContent,
-        .text = tab_placeholders[props.tab],
-        .hint = tab_hints[props.tab]
-    );
+    Widget_TabContent(.text = tab_placeholders[props.tab],
+                .hint = tab_hints[props.tab]) {}
 }
 
 static char g_cwd[512] = {0};
@@ -119,27 +117,28 @@ static char g_status_left[600] = {0};
 #define StatusBarView(...) CEL_Init(StatusBarView, __VA_ARGS__)
 CEL_Composition(StatusBarView) {
     (void)props;
-    CEL_Has(W_StatusBar,
-        .left = g_status_left,
-        .right = "1-4:tab  </>:switch  q:quit "
-    );
+    Widget_StatusBar(.left = g_status_left,
+               .right = "1-4:tab  </>:switch  q:quit ") {}
 }
 
 /* ============================================================================
  * Root Composition
  * ============================================================================ */
 
-CEL_Root(AppUI, TUI_EngineContext) {
-    TUI_WindowState_t* win = CEL_WatchId(ctx.windowState, TUI_WindowState_t);
+CEL_Root(AppUI, Engine_Context) {
+    Engine_WindowState_t* win = CEL_WatchId(ctx.windowState, Engine_WindowState_t);
 
     if (win->state == WINDOW_STATE_READY) {
         AppState_t* app = CEL_Watch(AppState);
 
         CEL_Use(TabInputSystem);
 
-        TabBarView(.active = app->active_tab) {}
-        TabContentView(.tab = app->active_tab) {}
-        StatusBarView() {}
+        Layout_Surface(.width = (float)win->width / 2.0f,
+                    .height = (float)win->height) {
+            TabBarView(.active = app->active_tab) {}
+            TabContentView(.tab = app->active_tab) {}
+            StatusBarView() {}
+        }
     }
 }
 
@@ -167,14 +166,15 @@ static void cli_app_init(void) {
 CEL_Build(CelsCLI) {
     (void)props;
 
-    Widgets_init();
-    TUI_Engine_use((TUI_EngineConfig){
+    Widget_init();
+    Engine_use((Engine_Config){
         .title = "CELS CLI",
         .version = "0.1.0",
         .fps = 30,
         .root = AppUI
     });
+    Clay_Engine_use(NULL);
+    clay_ncurses_renderer_init(NULL);
 
-    tui_widgets_register();
     cli_app_init();
 }
