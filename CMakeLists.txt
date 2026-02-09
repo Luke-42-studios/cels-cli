@@ -20,6 +20,7 @@ target_include_directories(cels-cli PRIVATE
 
 target_link_libraries(cels-cli PRIVATE
     cels
+    cels-widgets
     cels-ncurses
     flecs::flecs_static
 )

@@ -98,7 +98,7 @@ CEL_System(TabInputSystem,
 
 #define TabBarView(...) CEL_Init(TabBarView, __VA_ARGS__)
 CEL_Composition(TabBarView, CliTab active;) {
-    CEL_Has(TUI_TabBar,
+    CEL_Has(W_TabBar,
         .active = props.active,
         .count = TAB_COUNT,
         .labels = tab_labels
@@ -107,7 +107,7 @@ CEL_Composition(TabBarView, CliTab active;) {
 
 #define TabContentView(...) CEL_Init(TabContentView, __VA_ARGS__)
 CEL_Composition(TabContentView, CliTab tab;) {
-    CEL_Has(TUI_TabContent,
+    CEL_Has(W_TabContent,
         .text = tab_placeholders[props.tab],
         .hint = tab_hints[props.tab]
     );
@@ -119,7 +119,7 @@ static char g_status_left[600] = {0};
 #define StatusBarView(...) CEL_Init(StatusBarView, __VA_ARGS__)
 CEL_Composition(StatusBarView) {
     (void)props;
-    CEL_Has(TUI_StatusBar,
+    CEL_Has(W_StatusBar,
         .left = g_status_left,
         .right = "1-4:tab  </>:switch  q:quit "
     );
@@ -167,6 +167,7 @@ static void cli_app_init(void) {
 CEL_Build(CelsCLI) {
     (void)props;
 
+    Widgets_init();
     TUI_Engine_use((TUI_EngineConfig){
         .title = "CELS CLI",
         .version = "0.1.0",
