@@ -1,7 +1,7 @@
 # cels-cli State
 
-**Current Phase:** Phase 2: Project Scaffolding
-**Status:** Phase 1 complete, Phase 2 pending
+**Current Phase:** Phase 3: Module Management
+**Status:** Phase 2 complete, Phase 3 pending
 
 ## Architecture
 
@@ -13,7 +13,7 @@ Supersedes previous TypeScript/Pastel approach (scrapped 2026-02-09).
 | Phase | Status | Plans |
 |-------|--------|-------|
 | Phase 1: TUI Shell | COMPLETE | 01-01 |
-| Phase 2: Project Scaffolding | Pending | TBD |
+| Phase 2: Project Scaffolding | COMPLETE | 02-01 |
 | Phase 3: Module Management | Pending | TBD |
 | Phase 4: Build & Run | Pending | TBD |
 | Phase 5: npm Distribution | Pending | TBD |
@@ -21,3 +21,4 @@ Supersedes previous TypeScript/Pastel approach (scrapped 2026-02-09).
 ## Completed Plans
 
 - **01-01**: TUI Shell — CEL_Build + TUI_Engine_use, tab navigation (Projects|Packages|Build|Tests), input system, render provider, status bar
+- **02-01**: Project Scaffolding — `cels init <name>` subcommand, custom main() with dispatch, scaffold_project() generates CMakeLists.txt + src/main.c + .gitignore

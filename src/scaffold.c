@@ -1,19 +1,17 @@
 /*
- * cels-cli Scaffolding
+ * cels-cli Scaffold
  *
  * Generates a new CELS project directory with CMakeLists.txt,
- * src/main.c, and .gitignore. All files are self-contained
+ * src/main.c, and .gitignore. All generated files are self-contained
  * and compile immediately via cmake.
  */
 
-#ifndef CELS_CLI_SCAFFOLDING_H
-#define CELS_CLI_SCAFFOLDING_H
-
+#include "scaffold.h"
+#include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <errno.h>
 
 /* ============================================================================
  * Templates
@@ -21,12 +19,12 @@
 
 static const char* TMPL_CMAKELISTS =
     "cmake_minimum_required(VERSION 3.21)\n"
-    "project(%s VERSION 0.1.0 LANGUAGES C CXX)\n"
+    "project(%s LANGUAGES C)\n"
     "\n"
     "include(FetchContent)\n"
     "FetchContent_Declare(cels\n"
     "    GIT_REPOSITORY https://github.com/Luke-42-studios/cels.git\n"
-    "    GIT_TAG        v0.2.0\n"
+    "    GIT_TAG v0.2.0\n"
     ")\n"
     "FetchContent_MakeAvailable(cels)\n"
     "\n"
@@ -34,11 +32,8 @@ static const char* TMPL_CMAKELISTS =
     "cels_require(ncurses)\n"
     "\n"
     "add_executable(%s src/main.c)\n"
-    "set_target_properties(%s PROPERTIES\n"
-    "    C_STANDARD 99\n"
-    "    C_STANDARD_REQUIRED ON\n"
-    ")\n"
-    "target_link_libraries(%s PRIVATE cels cels-ncurses flecs::flecs_static)\n";
+    "target_link_libraries(%s PRIVATE cels cels-ncurses)\n"
+    "set_target_properties(%s PROPERTIES C_STANDARD 99)\n";
 
 static const char* TMPL_MAIN =
     "/*\n"
@@ -121,49 +116,46 @@ static int write_file_fmt(const char* path, const char* fmt, ...) {
 }
 
 /* ============================================================================
- * scaffold_project -- Create a new CELS project directory
- * ============================================================================
- *
- * Returns 0 on success, 1 on error.
- */
+ * cli_scaffold_project
+ * ============================================================================ */
 
-static int scaffold_project(const char* name) {
-    /* Validate name */
-    if (!name || name[0] == '\0') {
+int cli_scaffold_project(const char* project_name) {
+    if (!project_name || project_name[0] == '\0') {
         fprintf(stderr, "Error: project name cannot be empty.\n");
         return 1;
     }
 
     /* Create project directory */
-    if (make_dir(name) != 0) return 1;
+    if (make_dir(project_name) != 0) return 1;
 
     /* Create src/ subdirectory */
     char src_dir[512];
-    snprintf(src_dir, sizeof(src_dir), "%s/src", name);
+    snprintf(src_dir, sizeof(src_dir), "%s/src", project_name);
     if (make_dir(src_dir) != 0) return 1;
 
     /* Write CMakeLists.txt */
     char path[512];
-    snprintf(path, sizeof(path), "%s/CMakeLists.txt", name);
-    if (write_file_fmt(path, TMPL_CMAKELISTS, name, name, name, name) != 0) return 1;
+    snprintf(path, sizeof(path), "%s/CMakeLists.txt", project_name);
+    if (write_file_fmt(path, TMPL_CMAKELISTS,
+            project_name, project_name, project_name, project_name) != 0)
+        return 1;
 
     /* Write src/main.c */
-    snprintf(path, sizeof(path), "%s/src/main.c", name);
-    if (write_file_fmt(path, TMPL_MAIN, name, name) != 0) return 1;
+    snprintf(path, sizeof(path), "%s/src/main.c", project_name);
+    if (write_file_fmt(path, TMPL_MAIN, project_name, project_name) != 0)
+        return 1;
 
     /* Write .gitignore */
-    snprintf(path, sizeof(path), "%s/.gitignore", name);
+    snprintf(path, sizeof(path), "%s/.gitignore", project_name);
     if (write_file(path, TMPL_GITIGNORE) != 0) return 1;
 
-    printf("Created CELS project '%s'\n", name);
+    printf("Created CELS project '%s'\n", project_name);
     printf("\n");
-    printf("  cd %s\n", name);
+    printf("  cd %s\n", project_name);
     printf("  cmake -B build\n");
     printf("  cmake --build build\n");
-    printf("  ./build/%s\n", name);
+    printf("  ./build/%s\n", project_name);
     printf("\n");
 
     return 0;
 }
-
-#endif /* CELS_CLI_SCAFFOLDING_H */

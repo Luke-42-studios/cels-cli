@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.21)
 add_executable(cels-cli
     src/main.c
     src/app.c
+    src/scaffold.c
 )
 
 set_target_properties(cels-cli PROPERTIES

@@ -12,7 +12,7 @@
  *   cels-cli --version    Show version
  */
 
-#include "scaffolding.h"
+#include "scaffold.h"
 #include <cels/cels.h>
 #include <stdio.h>
 #include <string.h>
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
             fprintf(stderr, "Usage: cels-cli init <name>\n");
             return 1;
         }
-        return scaffold_project(argv[2]);
+        return cli_scaffold_project(argv[2]);
     }
 
     /* Unknown command */
