@@ -2,7 +2,7 @@
  * cels-cli Components
  *
  * Atomic component definitions for the CLI TUI shell.
- * Used by main.c (compositions) and render_provider.h (rendering).
+ * Used by app.c (compositions) and app.c (rendering).
  */
 
 #ifndef CELS_CLI_COMPONENTS_H
@@ -41,7 +41,7 @@ CEL_Define(TabContent, {
 /* StatusBar: bottom status line */
 CEL_Define(StatusBar, {
     const char* version;
-    const char* project_path;
+    const char* cwd;
 });
 
 #endif /* CELS_CLI_COMPONENTS_H */

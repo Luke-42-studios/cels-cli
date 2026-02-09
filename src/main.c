@@ -1,144 +1,69 @@
 /*
  * cels-cli -- Interactive TUI toolkit for the CELS framework
  *
- * Built with CELS itself using cels-ncurses backend.
- * Tab-based navigation: Projects | Packages | Build | Tests
+ * Custom main() handles subcommands (init, --help, --version)
+ * before optionally launching the TUI. Overrides the universal
+ * main() from libcels (static linker skips it when we define ours).
+ *
+ * Subcommands:
+ *   cels-cli              Launch TUI
+ *   cels-cli init <name>  Create a new CELS project
+ *   cels-cli --help       Show help
+ *   cels-cli --version    Show version
  */
 
-#include "components.h"
-#include "render_provider.h"
-#include <cels-ncurses/tui_engine.h>
-#include <flecs.h>
-#include <stdbool.h>
+#include "scaffolding.h"
+#include <cels/cels.h>
+#include <stdio.h>
 #include <string.h>
 
-/* ============================================================================
- * State
- * ============================================================================ */
+#define CLI_VERSION "0.1.0"
 
-CEL_State(AppState, {
-    CliTab active_tab;
-});
+static void print_help(void) {
+    printf("cels-cli %s -- CELS project toolkit\n", CLI_VERSION);
+    printf("\n");
+    printf("Usage:\n");
+    printf("  cels-cli              Launch interactive TUI\n");
+    printf("  cels-cli init <name>  Create a new CELS project\n");
+    printf("  cels-cli --help       Show this help\n");
+    printf("  cels-cli --version    Show version\n");
+}
 
-/* ============================================================================
- * Input System -- Tab switching via number keys and Tab key
- * ============================================================================ */
+int main(int argc, char** argv) {
+    /* No arguments: launch TUI */
+    if (argc < 2) {
+        Engine_Startup();
+        CELS_BuildInit();
+        cels_run_providers();
+        Engine_Shutdown();
+        return 0;
+    }
 
-static CELS_Input g_prev_input = {0};
+    const char* cmd = argv[1];
 
-CEL_System(TabInputSystem,
-    .phase = CELS_Phase_OnUpdate
-) {
-    (void)it;
-    CELS_Context* ctx = cels_get_context();
-    const CELS_Input* input = cels_input_get(ctx);
+    /* --help */
+    if (strcmp(cmd, "--help") == 0 || strcmp(cmd, "-h") == 0) {
+        print_help();
+        return 0;
+    }
 
-    /* Number keys 1-4 switch tabs directly */
-    if (input->has_number && !g_prev_input.has_number) {
-        int num = input->key_number;
-        if (num >= 1 && num <= TAB_COUNT) {
-            CEL_Update(AppState) {
-                AppState.active_tab = (CliTab)(num - 1);
-            }
+    /* --version */
+    if (strcmp(cmd, "--version") == 0 || strcmp(cmd, "-v") == 0) {
+        printf("cels-cli %s\n", CLI_VERSION);
+        return 0;
+    }
+
+    /* init <name> */
+    if (strcmp(cmd, "init") == 0) {
+        if (argc < 3) {
+            fprintf(stderr, "Usage: cels-cli init <name>\n");
+            return 1;
         }
+        return scaffold_project(argv[2]);
     }
 
-    /* Tab key cycles to next tab */
-    if (input->key_tab && !g_prev_input.key_tab) {
-        CEL_Update(AppState) {
-            AppState.active_tab = (CliTab)((AppState.active_tab + 1) % TAB_COUNT);
-        }
-    }
-
-    /* Shift+Tab cycles to previous tab */
-    if (input->key_shift_tab && !g_prev_input.key_shift_tab) {
-        CEL_Update(AppState) {
-            AppState.active_tab = (CliTab)((AppState.active_tab + TAB_COUNT - 1) % TAB_COUNT);
-        }
-    }
-
-    memcpy((void*)&g_prev_input, input, sizeof(CELS_Input));
-}
-
-/* ============================================================================
- * Placeholder text for each tab
- * ============================================================================ */
-
-static const char* tab_placeholders[TAB_COUNT] = {
-    "[ Projects ]",
-    "[ Packages ]",
-    "[ Build ]",
-    "[ Tests ]"
-};
-
-/* ============================================================================
- * Compositions
- * ============================================================================ */
-
-#define TabBarView(...) CEL_Init(TabBarView, __VA_ARGS__)
-CEL_Composition(TabBarView, CliTab active;) {
-    CEL_Has(TabBar, .active = props.active, .count = TAB_COUNT);
-}
-
-#define TabContentView(...) CEL_Init(TabContentView, __VA_ARGS__)
-CEL_Composition(TabContentView, CliTab tab;) {
-    CEL_Has(TabContent,
-        .tab = props.tab,
-        .placeholder_text = tab_placeholders[props.tab]
-    );
-}
-
-#define StatusBarView(...) CEL_Init(StatusBarView, __VA_ARGS__)
-CEL_Composition(StatusBarView) {
-    (void)props;
-    CEL_Has(StatusBar,
-        .version = "cels-cli v0.1.0",
-        .project_path = NULL
-    );
-}
-
-/* ============================================================================
- * Root Composition
- * ============================================================================ */
-
-CEL_Root(CliUI, TUI_EngineContext) {
-    TUI_WindowState_t* win = CEL_WatchId(ctx.windowState, TUI_WindowState_t);
-
-    if (win->state == WINDOW_STATE_READY) {
-        AppState_t* app = CEL_Watch(AppState);
-
-        CEL_Use(TabInputSystem);
-
-        TabBarView(.active = app->active_tab) {}
-        TabContentView(.tab = app->active_tab) {}
-        StatusBarView() {}
-    }
-}
-
-/* ============================================================================
- * Init
- * ============================================================================ */
-
-static void InitConfig(void) {
-    AppState = (AppState_t){
-        .active_tab = TAB_PROJECTS
-    };
-}
-
-/* ============================================================================
- * Entry Point
- * ============================================================================ */
-
-CEL_Build(CLI) {
-    (void)props;
-
-    TUI_Engine_use((TUI_EngineConfig){
-        .title = "cels-cli",
-        .version = "0.1.0",
-        .fps = 30,
-        .root = CliUI
-    });
-
-    cli_renderer_init();
-    InitConfig();
+    /* Unknown command */
+    fprintf(stderr, "Unknown command: %s\n", cmd);
+    fprintf(stderr, "Run 'cels-cli --help' for usage.\n");
+    return 1;
 }
