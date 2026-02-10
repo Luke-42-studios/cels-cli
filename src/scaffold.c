@@ -62,13 +62,9 @@ static const char* TMPL_MAIN_HELLO =
     " * %s -- A CELS Application\n"
     " */\n"
     "\n"
-    "#define _POSIX_C_SOURCE 200809L\n"
     "#include <cels/cels.h>\n"
     "#include <cels-widgets/compositions.h>\n"
-    "#include <cels-layout/layout.h>\n"
-    "#include <cels-ncurses/tui_engine.h>\n"
-    "#include <cels-clay/clay_engine.h>\n"
-    "#include <cels-clay/clay_ncurses_renderer.h>\n"
+    "#include <cels-ncurses/backend.h>\n"
     "\n"
     "/* Content area: centered greeting */\n"
     "#define HelloContent(...) CEL_Init(HelloContent, __VA_ARGS__)\n"
@@ -86,9 +82,11 @@ static const char* TMPL_MAIN_HELLO =
     "              .right = \"q:quit \") {}\n"
     "}\n"
     "\n"
-    "CEL_Root(AppUI, Engine_Context) {\n"
-    "    Engine_WindowState_t* win = CEL_WatchId(ctx.windowState, Engine_WindowState_t);\n"
-    "    if (win->state == WINDOW_STATE_READY) {\n"
+    "CEL_Root(AppUI) {\n"
+    "    (void)_props;\n"
+    "    cels_entity_t window = CEL_Query(CEL_Window);\n"
+    "    CEL_Window* win = CEL_Watch(window, CEL_Window);\n"
+    "    if (win && win->ready) {\n"
     "        Layout_Surface(.width = (float)win->width / 2.0f,\n"
     "                    .height = (float)win->height) {\n"
     "            HelloContent() {}\n"
@@ -97,18 +95,13 @@ static const char* TMPL_MAIN_HELLO =
     "    }\n"
     "}\n"
     "\n"
-    "CEL_Build(App) {\n"
-    "    (void)props;\n"
-    "    Widget_init();\n"
-    "    Engine_use((Engine_Config){\n"
-    "        .title   = \"%s\",\n"
-    "        .version = \"0.1.0\",\n"
-    "        .fps     = 30,\n"
-    "        .root    = AppUI\n"
-    "    });\n"
-    "    Clay_Engine_use(NULL);\n"
-    "    clay_ncurses_renderer_init(NULL);\n"
-    "}\n";
+    "CEL_BuildComposition(App) {\n"
+    "    CEL_BuildHas(CelsEngine);\n"
+    "    CEL_BuildHas(CelsNcurses);\n"
+    "    CEL_BuildHas(Widgets);\n"
+    "}\n"
+    "\n"
+    "CEL_Run(.title = \"%s\", .version = \"0.1.0\", .fps = 30, .root = AppUI);\n";
 
 /* ============================================================================
  * Templates - Menu + Settings
@@ -122,13 +115,9 @@ static const char* TMPL_MAIN_MENU =
     " * Controls: W/S to navigate, Enter to select, Q to quit.\n"
     " */\n"
     "\n"
-    "#define _POSIX_C_SOURCE 200809L\n"
     "#include <cels/cels.h>\n"
     "#include <cels-widgets/compositions.h>\n"
-    "#include <cels-layout/layout.h>\n"
-    "#include <cels-ncurses/tui_engine.h>\n"
-    "#include <cels-clay/clay_engine.h>\n"
-    "#include <cels-clay/clay_ncurses_renderer.h>\n"
+    "#include <cels-ncurses/backend.h>\n"
     "#include <stdbool.h>\n"
     "#include <string.h>\n"
     "\n"
@@ -306,9 +295,11 @@ static const char* TMPL_MAIN_MENU =
     "    }\n"
     "}\n"
     "\n"
-    "CEL_Root(AppUI, Engine_Context) {\n"
-    "    Engine_WindowState_t* win = CEL_WatchId(ctx.windowState, Engine_WindowState_t);\n"
-    "    if (win->state == WINDOW_STATE_READY) {\n"
+    "CEL_Root(AppUI) {\n"
+    "    (void)_props;\n"
+    "    cels_entity_t window = CEL_Query(CEL_Window);\n"
+    "    CEL_Window* win = CEL_Watch(window, CEL_Window);\n"
+    "    if (win && win->ready) {\n"
     "        Layout_Surface(.width = (float)win->width / 2.0f,\n"
     "                    .height = (float)win->height) {\n"
     "            MenuRouter() {}\n"
@@ -316,21 +307,16 @@ static const char* TMPL_MAIN_MENU =
     "    }\n"
     "}\n"
     "\n"
-    "CEL_Build(App) {\n"
-    "    (void)props;\n"
+    "CEL_BuildComposition(App) {\n"
     "    MenuState = (MenuState_t){ .screen = SCREEN_MAIN_MENU, .selected = 0, .item_count = 3 };\n"
     "    SettingsConfig = (SettingsConfig_t){ .fullscreen = true, .vsync = true };\n"
     "\n"
-    "    Widget_init();\n"
-    "    Engine_use((Engine_Config){\n"
-    "        .title   = \"%s\",\n"
-    "        .version = \"0.1.0\",\n"
-    "        .fps     = 30,\n"
-    "        .root    = AppUI\n"
-    "    });\n"
-    "    Clay_Engine_use(NULL);\n"
-    "    clay_ncurses_renderer_init(NULL);\n"
-    "}\n";
+    "    CEL_BuildHas(CelsEngine);\n"
+    "    CEL_BuildHas(CelsNcurses);\n"
+    "    CEL_BuildHas(Widgets);\n"
+    "}\n"
+    "\n"
+    "CEL_Run(.title = \"%s\", .version = \"0.1.0\", .fps = 30, .root = AppUI);\n";
 
 /* ============================================================================
  * Templates - Game Skeleton
@@ -344,13 +330,9 @@ static const char* TMPL_MAIN_GAME =
     " * Controls: WASD to move, Q to quit.\n"
     " */\n"
     "\n"
-    "#define _POSIX_C_SOURCE 200809L\n"
     "#include <cels/cels.h>\n"
     "#include <cels-widgets/compositions.h>\n"
-    "#include <cels-layout/layout.h>\n"
-    "#include <cels-ncurses/tui_engine.h>\n"
-    "#include <cels-clay/clay_engine.h>\n"
-    "#include <cels-clay/clay_ncurses_renderer.h>\n"
+    "#include <cels-ncurses/backend.h>\n"
     "#include <string.h>\n"
     "\n"
     "/* ============================================================================\n"
@@ -437,9 +419,11 @@ static const char* TMPL_MAIN_GAME =
     "              .right = \"wasd:move  q:quit \") {}\n"
     "}\n"
     "\n"
-    "CEL_Root(AppUI, Engine_Context) {\n"
-    "    Engine_WindowState_t* win = CEL_WatchId(ctx.windowState, Engine_WindowState_t);\n"
-    "    if (win->state == WINDOW_STATE_READY) {\n"
+    "CEL_Root(AppUI) {\n"
+    "    (void)_props;\n"
+    "    cels_entity_t window = CEL_Query(CEL_Window);\n"
+    "    CEL_Window* win = CEL_Watch(window, CEL_Window);\n"
+    "    if (win && win->ready) {\n"
     "        Layout_Surface(.width = (float)win->width / 2.0f,\n"
     "                    .height = (float)win->height) {\n"
     "            GameWorld() {}\n"
@@ -448,20 +432,15 @@ static const char* TMPL_MAIN_GAME =
     "    }\n"
     "}\n"
     "\n"
-    "CEL_Build(App) {\n"
-    "    (void)props;\n"
+    "CEL_BuildComposition(App) {\n"
     "    GameState = (GameState_t){ .score = 0, .running = 1 };\n"
     "\n"
-    "    Widget_init();\n"
-    "    Engine_use((Engine_Config){\n"
-    "        .title   = \"%s\",\n"
-    "        .version = \"0.1.0\",\n"
-    "        .fps     = 60,\n"
-    "        .root    = AppUI\n"
-    "    });\n"
-    "    Clay_Engine_use(NULL);\n"
-    "    clay_ncurses_renderer_init(NULL);\n"
-    "}\n";
+    "    CEL_BuildHas(CelsEngine);\n"
+    "    CEL_BuildHas(CelsNcurses);\n"
+    "    CEL_BuildHas(Widgets);\n"
+    "}\n"
+    "\n"
+    "CEL_Run(.title = \"%s\", .version = \"0.1.0\", .fps = 60, .root = AppUI);\n";
 
 /* ============================================================================
  * Helpers
@@ -530,9 +509,9 @@ static const char* template_main(ScaffoldTemplate tmpl) {
 /* Returns the number of %s format args in each template's main.c */
 static int template_arg_count(ScaffoldTemplate tmpl) {
     switch (tmpl) {
-        case SCAFFOLD_HELLO: return 4; /* header, text, status left, build title */
-        case SCAFFOLD_MENU:  return 4; /* header, canvas title, status left, build title */
-        case SCAFFOLD_GAME:  return 3; /* header, status left, build title */
+        case SCAFFOLD_HELLO: return 4; /* header, text, status left, CEL_Run title */
+        case SCAFFOLD_MENU:  return 4; /* header, canvas title, status left, CEL_Run title */
+        case SCAFFOLD_GAME:  return 3; /* header, status left, CEL_Run title */
         default:             return 4;
     }
 }
