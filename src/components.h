@@ -7,8 +7,7 @@
 #ifndef CELS_CLI_COMPONENTS_H
 #define CELS_CLI_COMPONENTS_H
 
-#include <cels-widgets/widgets.h>
-#include <cels-ncurses/tui_widgets.h>
+#include <cels-widgets/compositions.h>
 
 /* ============================================================================
  * Enums
